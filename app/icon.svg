@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36">
+  <defs>
+    <linearGradient id="b" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fcd34d"/>
+      <stop offset="55%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#c2410c"/>
+    </linearGradient>
+    <linearGradient id="p" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7c2d12"/>
+      <stop offset="100%" stop-color="#3f1505"/>
+    </linearGradient>
+  </defs>
+
+  <!-- subtle warm backdrop circle so the icon stands out on light tabs -->
+  <circle cx="18" cy="18" r="17" fill="#150a07"/>
+
+  <!-- top bun -->
+  <path d="M 5 14 Q 5 5 18 5 Q 31 5 31 14 Z" fill="url(#b)"/>
+
+  <!-- sesame seeds -->
+  <ellipse cx="11" cy="10" rx="1.4" ry="0.8" fill="#fff8e0" transform="rotate(-15 11 10)"/>
+  <ellipse cx="18" cy="7.5" rx="1.4" ry="0.8" fill="#fff8e0"/>
+  <ellipse cx="25" cy="10" rx="1.4" ry="0.8" fill="#fff8e0" transform="rotate(15 25 10)"/>
+
+  <!-- cheese drip -->
+  <path d="M 4.5 14 L 31.5 14 L 31.5 17.5 Q 24 19 18 17.5 Q 11 16 4.5 17.8 Z" fill="#facc15"/>
+
+  <!-- patty -->
+  <rect x="5" y="17" width="26" height="6" rx="2.5" fill="url(#p)"/>
+
+  <!-- lettuce frill -->
+  <path d="M 4.5 22.5 Q 7 21 10 22.5 T 16 22.5 T 22 22.5 T 28 22.5 T 31.5 22.5 L 31.5 24 L 4.5 24 Z" fill="#65a30d"/>
+
+  <!-- bottom bun -->
+  <path d="M 5 24 L 31 24 L 31 27 Q 31 31 18 31 Q 5 31 5 27 Z" fill="url(#b)"/>
+</svg>
