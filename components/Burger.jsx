@@ -7,30 +7,35 @@ import { Box3, Vector3 } from 'three';
 import { useScrollAnimation } from '@/lib/useScrollAnimation';
 
 /*
-  REALISTIC BURGER — DRAG TO ROTATE & MOVE
-  ----------------------------------------
-  • Left mouse drag:  rotate the burger (yaw + pitch)
-  • Right mouse drag (or shift + left drag):  move the burger position
-  • Cursor: grab on hover, grabbing while dragging
-  • Scroll continues to add a slow turntable rotation on top of the
-    user's rotation, so the page still feels animated when idle.
+  REALISTIC BURGER — DRAG TO ROTATE & MOVE (RESPONSIVE)
+  -----------------------------------------------------
+  Desktop  → burger sits to the left, leaving the right side for text
+  Mobile   → burger sits centred so it's framed on a narrow viewport
+
+  Drag:
+    • Left mouse drag  → rotate (yaw + pitch)
+    • Right / Shift drag → translate (desktop only)
+    • Touch horizontal → rotate ; touch vertical → page scroll
 */
 
 const MODEL = '/models/burger-realistic/source/Burger.fbx';
 const TARGET_SIZE = 2.4;
-const DEFAULT_POSITION = [-1.4, 0, 0];
-const ROTATE_SENSITIVITY = 0.008; // radians per pixel of mouse movement
-const PITCH_LIMIT = Math.PI / 3;  // 60° — don't let user flip upside-down
+const ROTATE_SENSITIVITY = 0.008;
+const PITCH_LIMIT = Math.PI / 3;
 
-export default function Burger() {
+export default function Burger({ basePositionX = -1.4 }) {
   const groupRef = useRef();
   const fbx = useFBX(MODEL);
   const scroll = useScrollAnimation();
   const { camera, gl } = useThree();
 
-  // User-driven rotation, accumulated across drags
+  // Accumulated user-drag rotation
   const userRotY = useRef(0);
   const userRotX = useRef(0);
+
+  // Accumulated user-drag translation (offset added to base position)
+  const dragOffsetX = useRef(0);
+  const dragOffsetY = useRef(0);
 
   // Auto-fit + polish the FBX
   const model = useMemo(() => {
@@ -74,51 +79,53 @@ export default function Burger() {
       return camera.position.clone().add(dir.multiplyScalar(distance));
     };
 
-    const onContextMenu = (e) => e.preventDefault(); // free right-click for pan
+    const onContextMenu = (e) => e.preventDefault();
     el.addEventListener('contextmenu', onContextMenu);
 
     const onPointerDown = (e) => {
       if (!groupRef.current) return;
-      const panMode = e.button === 2 || e.shiftKey;
+      // Pan only with right click or shift — disabled for touch (mouse only)
+      const panMode = (e.button === 2 || e.shiftKey) && e.pointerType !== 'touch';
       if (wrapper) wrapper.classList.add('dragging');
 
       let lastX = e.clientX;
       let lastY = e.clientY;
-      let panOffsetX = 0;
-      let panOffsetY = 0;
+      let panStartX = 0;
+      let panStartY = 0;
+      let initialOffsetX = dragOffsetX.current;
+      let initialOffsetY = dragOffsetY.current;
 
       if (panMode) {
         const wp = screenToWorld(e.clientX, e.clientY);
-        panOffsetX = groupRef.current.position.x - wp.x;
-        panOffsetY = groupRef.current.position.y - wp.y;
+        panStartX = wp.x;
+        panStartY = wp.y;
       }
 
       const onMove = (ev) => {
         if (!groupRef.current) return;
         if (panMode) {
-          // Move the burger so the cursor stays on the same point
           const w = screenToWorld(ev.clientX, ev.clientY);
-          groupRef.current.position.x = w.x + panOffsetX;
-          groupRef.current.position.y = w.y + panOffsetY;
+          dragOffsetX.current = initialOffsetX + (w.x - panStartX);
+          dragOffsetY.current = initialOffsetY + (w.y - panStartY);
         } else {
-          // Rotate — horizontal mouse = yaw, vertical mouse = pitch
           const dx = ev.clientX - lastX;
           const dy = ev.clientY - lastY;
           lastX = ev.clientX;
           lastY = ev.clientY;
           userRotY.current += dx * ROTATE_SENSITIVITY;
           userRotX.current += dy * ROTATE_SENSITIVITY;
-          // Clamp pitch so we can't flip upside-down
           userRotX.current = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, userRotX.current));
         }
       };
-      const onUp = () => {
+      const onEnd = () => {
         if (wrapper) wrapper.classList.remove('dragging');
         window.removeEventListener('pointermove', onMove);
-        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointerup', onEnd);
+        window.removeEventListener('pointercancel', onEnd);
       };
       window.addEventListener('pointermove', onMove);
-      window.addEventListener('pointerup', onUp);
+      window.addEventListener('pointerup', onEnd);
+      window.addEventListener('pointercancel', onEnd);
     };
     el.addEventListener('pointerdown', onPointerDown);
 
@@ -131,13 +138,18 @@ export default function Burger() {
   useFrame(() => {
     const t = scroll.current;
     if (!groupRef.current) return;
-    // Combine user rotation + slow scroll-driven turntable
+
+    // Position = responsive base + user pan offset
+    groupRef.current.position.x = basePositionX + dragOffsetX.current;
+    groupRef.current.position.y = 0 + dragOffsetY.current;
+
+    // Rotation = user drag + scroll-driven turntable
     groupRef.current.rotation.y = userRotY.current + t * Math.PI * 1.2;
     groupRef.current.rotation.x = userRotX.current + Math.sin(t * Math.PI * 2) * 0.04;
   });
 
   return (
-    <group ref={groupRef} position={DEFAULT_POSITION}>
+    <group ref={groupRef}>
       <primitive object={model} />
     </group>
   );

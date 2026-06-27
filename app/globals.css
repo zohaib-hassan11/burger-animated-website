@@ -26,6 +26,9 @@ body {
   z-index: 1;
   pointer-events: auto;
   cursor: grab;
+  /* Mobile: vertical finger drag = page scroll,
+     horizontal finger drag = burger rotation */
+  touch-action: pan-y;
 }
 .canvas-wrapper.dragging,
 .canvas-wrapper:active {
