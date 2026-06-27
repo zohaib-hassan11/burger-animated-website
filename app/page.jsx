@@ -2,12 +2,15 @@
 
 import dynamic from 'next/dynamic';
 import Sections from '@/components/Sections';
+import LoadingScreen from '@/components/LoadingScreen';
 
 const Scene = dynamic(() => import('@/components/Scene'), { ssr: false });
 
 export default function Home() {
   return (
     <main>
+      <LoadingScreen />
+
       {/* Fixed 3D burger canvas */}
       <div className="canvas-wrapper">
         <Scene />

@@ -6,6 +6,13 @@ export const metadata = {
   description: 'Flame-grilled, hand-pressed, grass-fed. Open until late.',
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: '#150a07',
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
